@@ -148,7 +148,7 @@ function App() {
     return todayHours ? `${todayHours.day}: ${todayHours.hours}` : 'Hours not available';
   };
 
-  const webhookUrl = 'https://n8n.srv963601.hstgr.cloud/webhook/9fba89b1-9202-4ec0-9845-fb331ede3582';
+  const webhookUrl = 'https://c145-4-188-78-81.ngrok-free.app/webhook/9fba89b1-9202-4ec0-9845-fb331ede3582';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

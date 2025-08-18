@@ -79,7 +79,7 @@ function App() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [filterText, setFilterText] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const isPlacesData = (data: any): data is Place[] => {
     return Array.isArray(data) && data.length > 0 && data[0].title && data[0].address;
@@ -148,7 +148,7 @@ function App() {
     return todayHours ? `${todayHours.day}: ${todayHours.hours}` : 'Hours not available';
   };
 
-  const webhookUrl = 'https://flowagent.server.alightbeast.in/webhook-test/11be3fa8-26ad-4b21-8c66-2828dd5ed0f6';
+  const webhookUrl = 'http://localhost:5678/webhook/9fba89b1-9202-4ec0-9845-fb331ede3582';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,6 +164,7 @@ function App() {
       const params = new URLSearchParams();
       params.append('field1', location);
       params.append('field2', searchTerm);
+      params.append('limit', itemsPerPage.toString()); // Add the number of entries parameter
 
       const fullUrl = `${webhookUrl}?${params.toString()}`;
       
@@ -393,49 +394,71 @@ function App() {
                   <p className="text-xs text-gray-500 mt-2">Specify the type of business you're researching</p>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn-primary w-full flex items-center justify-center gap-3 text-lg py-4"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Analyzing Market...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="w-5 h-5" />
-                      Start Research
-                    </>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Number of Entries
+                  </label>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    className="input-field"
+                  >
+                    <option value={10}>10 entries</option>
+                    <option value={50}>50 entries</option>
+                    <option value={100}>100 entries</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-2">Select how many results to display per page</p>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn-primary flex-1 flex items-center justify-center gap-3 text-lg py-4"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Analyzing Market...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-5 h-5" />
+                        Start Research
+                      </>
+                    )}
+                  </button>
+                  {response && (
+                    <button
+                      onClick={exportData}
+                      className="btn-secondary flex items-center justify-center gap-2 px-4"
+                    >
+                      <Download className="w-5 h-5" />
+                      Export CSV
+                    </button>
                   )}
-                </button>
+                </div>
 
                 {/* Quick Actions */}
                 {response && (
                   <div className="flex gap-2 pt-4 border-t border-gray-200">
                     <button
-                      onClick={exportData}
-                      className="btn-secondary flex-1 flex items-center justify-center gap-2"
-                    >
-                      <Download className="w-4 h-4" />
-                      Export CSV
-                    </button>
-                    <button
                       onClick={copyResponse}
-                      className="btn-secondary flex items-center justify-center gap-2"
+                      className="btn-secondary flex-1 flex items-center justify-center gap-2"
                     >
                       {copied ? (
                         <CheckCircle className="w-4 h-4 text-green-600" />
                       ) : (
                         <Copy className="w-4 h-4" />
                       )}
+                      Copy JSON
                     </button>
                     <button
                       onClick={clearResponse}
-                      className="btn-secondary flex items-center justify-center gap-2"
+                      className="btn-secondary flex-1 flex items-center justify-center gap-2"
                     >
                       <Trash2 className="w-4 h-4" />
+                      Clear
                     </button>
                   </div>
                 )}
@@ -494,6 +517,18 @@ function App() {
                           className="pl-10 pr-4 py-2 bg-white/50 backdrop-blur-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                         />
                       </div>
+                      <select
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setCurrentPage(1);
+                        }}
+                        className="px-3 py-2 bg-white/50 backdrop-blur-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                      >
+                        <option value={10}>10 entries</option>
+                        <option value={50}>50 entries</option>
+                        <option value={100}>100 entries</option>
+                      </select>
                     </div>
                   </div>
                   
@@ -539,7 +574,6 @@ function App() {
                                 {getSortIcon('reviewsCount')}
                               </button>
                             </th>
-                            <th className="px-6 py-4 text-left">Contact</th>
                             <th className="px-6 py-4 text-left">
                               <button
                                 onClick={() => handleSort('city')}
@@ -549,6 +583,7 @@ function App() {
                                 {getSortIcon('city')}
                               </button>
                             </th>
+                            <th className="px-6 py-4 text-left">Contact</th>
                             <th className="px-6 py-4 text-left">Status</th>
                           </tr>
                         </thead>
@@ -719,6 +754,18 @@ function App() {
                           className="pl-10 pr-4 py-2 bg-white/50 backdrop-blur-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                         />
                       </div>
+                      <select
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setCurrentPage(1);
+                        }}
+                        className="px-3 py-2 bg-white/50 backdrop-blur-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                      >
+                        <option value={10}>10 entries</option>
+                        <option value={50}>50 entries</option>
+                        <option value={100}>100 entries</option>
+                      </select>
                     </div>
                   </div>
                   
@@ -740,10 +787,10 @@ function App() {
                             <th className="px-6 py-4 text-left">
                               <span className="font-semibold text-gray-700">Reviews</span>
                             </th>
-                            <th className="px-6 py-4 text-left">Contact</th>
                             <th className="px-6 py-4 text-left">
                               <span className="font-semibold text-gray-700">Location</span>
                             </th>
+                            <th className="px-6 py-4 text-left">Contact</th>
                             <th className="px-6 py-4 text-left">Status</th>
                           </tr>
                         </thead>

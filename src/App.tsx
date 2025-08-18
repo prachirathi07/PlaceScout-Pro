@@ -148,7 +148,7 @@ function App() {
     return todayHours ? `${todayHours.day}: ${todayHours.hours}` : 'Hours not available';
   };
 
-  const webhookUrl = 'http://localhost:5678/webhook/9fba89b1-9202-4ec0-9845-fb331ede3582';
+  const webhookUrl = 'https://n8n.srv963601.hstgr.cloud/webhook/9fba89b1-9202-4ec0-9845-fb331ede3582';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,7 +164,7 @@ function App() {
       const params = new URLSearchParams();
       params.append('field1', location);
       params.append('field2', searchTerm);
-      params.append('limit', itemsPerPage.toString()); // Add the number of entries parameter
+      params.append('limit', itemsPerPage.toString());
 
       const fullUrl = `${webhookUrl}?${params.toString()}`;
       
@@ -172,7 +172,12 @@ function App() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         },
+        mode: 'cors', // Add CORS mode
+        credentials: 'same-origin', // Handle credentials
       });
 
       const responseData = await res.text();
